@@ -119,11 +119,19 @@ class Scrap:
         self.__data["Channel Subs"] = self.__scrape_video_channel_socialblade(self.channelID)
 
     def run_video_scrapper(self ):
-        try:
-            self.__scrape_video_info()
-            return self.__data
-        except:
-            print("FAILED")
+        done = False
+        count = 0
+        while (not done and count <= 10):
+            try:
+                self.__scrape_video_info()
+                done = True
+                return self.__data
+            except:
+                print("Video Failed due to closing connection, but trying again")
+                count += 1
+        print("Tried to scrap this video for 10 times but no luck! This means the "
+              "video is restricted by youtube and enter a redirection loop")
+
 
     def __init__(self, *args):
         self.__headers = {'User-Agent': self.__headers[random.randint(0,len(self.__headers)-1)]}

@@ -38,7 +38,7 @@ class GUI:
         label.pack()
 
     def radio(self):
-        self.type = StringVar()
+        self.type = StringVar(None, "video")
         radiobutton_1 = Radiobutton(self.gui, text='Videos', variable=self.type, value="video")
         radiobutton_1.pack()
         radiobutton_2 = Radiobutton(self.gui, text='Channels', variable=self.type, value="channel")
