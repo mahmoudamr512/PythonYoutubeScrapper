@@ -7,6 +7,8 @@ import tqdm
 from multiprocessing import cpu_count
 import csv
 from tkinter.filedialog import asksaveasfile
+from os import system, name
+from time import sleep
 
 def scrape(link):
     data = sp.Scrap(link, "video")
@@ -18,13 +20,14 @@ class GUI:
     # Backend For Requests
     def scrapePool(self):
         self.links = list(set(self.links))
-        with Pool(processes=cpu_count()*2) as pool, tqdm.tqdm(
+        with Pool(processes=cpu_count()) as pool, tqdm.tqdm(
                 total=len(self.links)) as pbar:  # create Pool of processes (only 2 in this example) and tqdm Progress bar
             self.list = []  # into this list I will store the urls returned from parse() function
             for data in pool.imap_unordered(scrape,
                                             self.links):  # send urls from all_urls list to parse() function (it will be done concurently in process pool). The results returned will be unordered (returned when they are available, without waiting for other processes)
-                self.list.append(data)  # update all_data list
-                pbar.update()
+                if data != "":
+                    self.list.append(data)  # update all_data list
+                    pbar.update()
 
 
     # Backend For Channel Videos`
@@ -65,7 +68,7 @@ class GUI:
         self.save_btn.configure(state=DISABLED)
         if self.type.get() == "video":
             self.links = self.saveText.split("\n")
-            self.links = self.links[:len(self.links) - 1]
+            self.links = [i for i in self.links if i]
             self.scrapePool()
             self.csv_export()
             self.finish_process()
@@ -76,17 +79,23 @@ class GUI:
             self.scrapePool()
             self.csv_export()
             self.finish_process()
+        print("DONE! Clearing screen in 3 Seconds!")
+        sleep(3)
+        _ = system('cls')
 
     def csv_export(self):
         data = [("csv file(*.csv)", "*.csv")]
-        file = asksaveasfile(filetypes=data, defaultextension=data)
+        try:
+            file = asksaveasfile(filetypes=data, defaultextension=data)
 
-        keys = self.list[0].keys()
+            keys = self.list[0].keys()
 
-        with open(file.name, 'w', newline='', encoding="utf-8") as csvfile:
-            dict_writer = csv.DictWriter(csvfile, keys)
-            dict_writer.writeheader()
-            dict_writer.writerows(self.list)
+            with open(file.name, 'w', newline='', encoding="utf-8") as csvfile:
+                dict_writer = csv.DictWriter(csvfile, keys)
+                dict_writer.writeheader()
+                dict_writer.writerows(self.list)
+        except:
+            pass
 
 
     def finish_process(self):
